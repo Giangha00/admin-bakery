@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Table, Button, Tag, Select, Popconfirm, message, Input } from "antd";
+import { Table, Button, Tag, Select, Popconfirm, message, Input, DatePicker } from "antd";
 import axios from "axios";
+import dayjs from "dayjs";
 
 const Home = () => {
   const [orders, setOrders] = useState([]);
@@ -8,6 +9,7 @@ const Home = () => {
   const [statusFilter, setStatusFilter] = useState("Pending"); // Default to Pending
   const [idFilter, setIdFilter] = useState("");
   const [nameFilter, setNameFilter] = useState("");
+  const [dateFilter, setDateFilter] = useState(null); // New state for date filter
 
   const fetchOrders = async () => {
     try {
@@ -77,7 +79,7 @@ const Home = () => {
       dataIndex: "created_at",
       key: "created_at",
       width: 150,
-      render: (date) => new Date(date).toISOString().split("T")[0],
+      render: (date) => dayjs(date).format("YYYY-MM-DD"),
     },
     {
       title: "Grand Total",
@@ -157,7 +159,10 @@ const Home = () => {
     const matchesName = nameFilter
       ? order.customer_name.toLowerCase().includes(nameFilter.toLowerCase())
       : true;
-    return matchesStatus && matchesId && matchesName;
+    const matchesDate = dateFilter
+      ? dayjs(order.created_at).format("YYYY-MM-DD") === dayjs(dateFilter).format("YYYY-MM-DD")
+      : true;
+    return matchesStatus && matchesId && matchesName && matchesDate;
   });
 
   console.log("Filtered Orders:", filteredOrders); // Debug log
@@ -197,6 +202,26 @@ const Home = () => {
             value={nameFilter}
             onChange={(e) => setNameFilter(e.target.value)}
             placeholder="Enter Name"
+            style={{ width: 150 }}
+            allowClear
+          />
+        </div>
+        <div>
+          <label style={{ marginRight: 8 }}>Created Date:</label>
+          <DatePicker
+            value={dateFilter}
+            onChange={(date) => setDateFilter(date)}
+            disabledDate={(current) => {
+              if (!current) return false;
+              const today = dayjs();
+              const oneMonthAgo = today.subtract(1, "month");
+              return (
+                current.isAfter(today, "day") ||
+                current.isBefore(oneMonthAgo, "day")
+              );
+            }}
+            format="YYYY-MM-DD"
+            placeholder="Select Date"
             style={{ width: 150 }}
             allowClear
           />
