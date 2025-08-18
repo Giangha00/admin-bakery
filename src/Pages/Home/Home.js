@@ -9,7 +9,8 @@ const Home = () => {
   const [statusFilter, setStatusFilter] = useState("Pending"); // Default to Pending
   const [idFilter, setIdFilter] = useState("");
   const [nameFilter, setNameFilter] = useState("");
-  const [dateFilter, setDateFilter] = useState(null); // New state for date filter
+  const [phoneFilter, setPhoneFilter] = useState(""); // New state for phone filter
+  const [dateFilter, setDateFilter] = useState(null); // State for date filter
 
   const fetchOrders = async () => {
     try {
@@ -159,10 +160,13 @@ const Home = () => {
     const matchesName = nameFilter
       ? order.customer_name.toLowerCase().includes(nameFilter.toLowerCase())
       : true;
+    const matchesPhone = phoneFilter
+      ? String(order.phone).toLowerCase().includes(phoneFilter.toLowerCase())
+      : true;
     const matchesDate = dateFilter
       ? dayjs(order.created_at).format("YYYY-MM-DD") === dayjs(dateFilter).format("YYYY-MM-DD")
       : true;
-    return matchesStatus && matchesId && matchesName && matchesDate;
+    return matchesStatus && matchesId && matchesName && matchesPhone && matchesDate;
   });
 
   console.log("Filtered Orders:", filteredOrders); // Debug log
@@ -202,6 +206,16 @@ const Home = () => {
             value={nameFilter}
             onChange={(e) => setNameFilter(e.target.value)}
             placeholder="Enter Name"
+            style={{ width: 150 }}
+            allowClear
+          />
+        </div>
+        <div>
+          <label style={{ marginRight: 8 }}>Phone:</label>
+          <Input
+            value={phoneFilter}
+            onChange={(e) => setPhoneFilter(e.target.value)}
+            placeholder="Enter Phone"
             style={{ width: 150 }}
             allowClear
           />
