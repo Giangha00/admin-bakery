@@ -135,7 +135,7 @@ const Home = () => {
           </Button>
           <Popconfirm
             title="Are you sure delete this order?"
-            onConfirm={() => message.success(`Deleted order ${record.id}`)}
+            onConfirm={() => handleDeleteOrder(record.id)} // ✅ gọi API xóa
             okText="Yes"
             cancelText="No"
           >
@@ -147,6 +147,26 @@ const Home = () => {
       ),
     },
   ];
+
+  const handleDeleteOrder = async (orderId) => {
+    try {
+      const res = await axios.post(
+        "http://localhost:8888/api/delete_order.php",
+        new URLSearchParams({ order_id: orderId })
+      );
+
+      if (res.data.status) {
+        message.success(`Deleted order ${orderId}`);
+        // Cập nhật lại danh sách orders
+        setOrders((prev) => prev.filter((order) => order.id !== orderId));
+      } else {
+        message.error(res.data.message || "Delete failed!");
+      }
+    } catch (error) {
+      console.error("Error deleting order:", error);
+      message.error("Delete failed!");
+    }
+  };
 
   return (
     <div style={{ padding: 20 }}>

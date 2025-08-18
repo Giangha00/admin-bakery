@@ -3,6 +3,7 @@ import { Table, Button, Image, Space, Input, DatePicker } from "antd";
 import dayjs from "dayjs";
 import axios from "axios";
 import InsertModal from "../../Components/InsertModal/InsertModal";
+import EditModal from "../../Components/EditModal/EditModal";
 
 const Product = () => {
   const [products, setProducts] = useState([]);
@@ -10,6 +11,9 @@ const Product = () => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [filterDate, setFilterDate] = useState(null);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editFormValues, setEditFormValues] = useState({});
+  const [editProductId, setEditProductId] = useState(null);
   const [formValues, setFormValues] = useState({
     name: "",
     type: "",
@@ -227,10 +231,7 @@ const Product = () => {
       title: "Action",
       key: "action",
       render: (_, record) => (
-        <Button
-          type="primary"
-          onClick={() => alert(`Edit product ${record.id}`)}
-        >
+        <Button type="primary" onClick={() => handleEditClick(record)}>
           Edit
         </Button>
       ),
@@ -297,7 +298,15 @@ const Product = () => {
     setFilteredProducts(filtered);
   };
 
-  console.log("filteredProducts", filteredProducts);
+  const handleEditClick = (product) => {
+    setEditFormValues(product);
+    setEditProductId(product.id);
+    setEditModalVisible(true);
+  };
+
+  const handleUpdated = () => {
+    fetchProducts();
+  };
 
   return (
     <div style={{ padding: 20 }}>
@@ -368,6 +377,22 @@ const Product = () => {
         }
         onSubmit={handleSubmit}
         onClose={() => setShowModal(false)}
+      />
+
+      <EditModal
+        show={editModalVisible}
+        title="Edit Product"
+        fields={fields}
+        values={editFormValues}
+        onChange={(e) =>
+          setEditFormValues({
+            ...editFormValues,
+            [e.target.name]: e.target.value,
+          })
+        }
+        onClose={() => setEditModalVisible(false)}
+        productId={editProductId}
+        onUpdated={handleUpdated} // 🔥 phải có
       />
     </div>
   );
