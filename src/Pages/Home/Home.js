@@ -15,10 +15,10 @@ import dayjs from "dayjs";
 const Home = () => {
   const [orders, setOrders] = useState([]);
   const [pendingStatus, setPendingStatus] = useState({});
-  const [statusFilter, setStatusFilter] = useState("All"); 
+  const [statusFilter, setStatusFilter] = useState("All");
   const [idFilter, setIdFilter] = useState("");
   const [nameFilter, setNameFilter] = useState("");
-  const [dateFilter, setDateFilter] = useState(null); 
+  const [dateFilter, setDateFilter] = useState(null);
 
   const fetchOrders = async () => {
     try {
@@ -175,8 +175,8 @@ const Home = () => {
             cancelText="No"
             disabled={record.status === "Completed" || record.status === "Cancelled"}
           >
-            <Button 
-              danger 
+            <Button
+              danger
               size="small"
               disabled={record.status === "Completed" || record.status === "Cancelled"}
             >
