@@ -6,7 +6,9 @@ import {
   Space,
   Input,
   DatePicker,
+  Tooltip,
   Popconfirm,
+  message,
 } from "antd";
 import dayjs from "dayjs";
 import axios from "axios";
@@ -31,7 +33,7 @@ const Product = () => {
     images: [],
     ingredients: [],
     price: "",
-    category_id: "1", // mặc định = 1
+    category_id: "1",
   });
 
   const fetchProducts = async () => {
@@ -52,7 +54,6 @@ const Product = () => {
   useEffect(() => {
     let tempProducts = [...products];
 
-    // filter theo searchText
     if (searchText.trim()) {
       const lowerValue = searchText.trim().toLowerCase();
       tempProducts = tempProducts.filter((item) => {
@@ -82,20 +83,20 @@ const Product = () => {
 
   const handleDelete = async (id) => {
     try {
-      const rs = await axios.post(
+      const res = await axios.post(
         "http://localhost:8888/api/delete_product.php",
         { id }
       );
-      if (rs.data.status) {
-        console.log("Delete success:", rs.data);
+      console.log(res.data);
+      if (res.data.status) {
+        message.success("Product deleted successfully");
         fetchProducts();
       } else {
-        console.error("Delete failed:", rs.data.message);
-        alert("Delete failed: " + rs.data.message);
+        message.error(res.data.message);
       }
-    } catch (error) {
-      console.error("Error deleting product:", error);
-      alert("Error deleting product: " + error.message);
+    } catch (err) {
+      console.error(err);
+      message.error("Delete failed");
     }
   };
 
@@ -114,12 +115,40 @@ const Product = () => {
     });
   };
 
+  const handleDeleteProduct = async (productId) => {
+    try {
+      const res = await axios.post(
+        "http://localhost:8888/api/delete_product.php",
+        new URLSearchParams({ product_id: productId })
+      );
+      if (res.data.status) {
+        message.success(`Deleted product ${productId}`);
+        setProducts((prev) =>
+          prev.filter((product) => product.id !== productId)
+        );
+        setFilteredProducts((prev) =>
+          prev.filter((product) => product.id !== productId)
+        );
+      } else {
+        message.error(res.data.message || "Delete failed!");
+      }
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      message.error("Delete failed!");
+    }
+  };
+
   const fields = [
     { name: "name", label: "Name", type: "text", required: true },
     { name: "type", label: "Type", type: "text", required: true },
     { name: "description", label: "Description", type: "text" },
     { name: "qty", label: "Quantity", type: "number", required: true },
-    { name: "thumbnail", label: "Thumbnail URL", type: "text", required: true },
+    {
+      name: "thumbnail",
+      label: "Thumbnail(URL)",
+      type: "text",
+      required: true,
+    },
     {
       name: "images",
       label: "Images (JSON Array)",
@@ -145,71 +174,91 @@ const Product = () => {
       title: "ID",
       dataIndex: "id",
       key: "id",
+      width: 80,
     },
     {
       title: "Name",
       dataIndex: "name",
       key: "name",
+      width: 150,
     },
     {
       title: "Type",
       dataIndex: "type",
       key: "type",
+      width: 120,
     },
     {
       title: "Description",
       dataIndex: "description",
       key: "description",
-      ellipsis: true,
+      width: 200,
+      render: (text) => (
+        <Tooltip title={text} placement="topLeft">
+          <span>{text.length > 100 ? `${text.slice(0, 100)}...` : text}</span>
+        </Tooltip>
+      ),
     },
     {
       title: "Create Date",
       dataIndex: "created_at",
       key: "created_at",
+      width: 120,
       render: (date) => new Date(date).toISOString().split("T")[0],
     },
     {
       title: "Update Date",
       dataIndex: "updated_at",
       key: "updated_at",
+      width: 120,
       render: (date) => new Date(date).toISOString().split("T")[0],
     },
     {
       title: "Quantity",
       dataIndex: "qty",
       key: "qty",
+      width: 100,
     },
-
     {
       title: "Price",
       dataIndex: "price",
       key: "price",
+      width: 100,
       render: (value) => `$${value}`,
     },
     {
       title: "Category ID",
       dataIndex: "category_id",
       key: "category_id",
+      width: 100,
     },
     {
       title: "Ingredients",
       dataIndex: "ingredients",
       key: "ingredients",
+      width: 200,
       render: (val) => {
         try {
           const arr = typeof val === "string" ? JSON.parse(val) : val;
           if (!Array.isArray(arr)) return val;
-          return arr.join(", ");
+          const text = arr.join(", ");
+          return (
+            <Tooltip title={text} placement="topLeft">
+              <span>
+                {text.length > 100 ? `${text.slice(0, 100)}...` : text}
+              </span>
+            </Tooltip>
+          );
         } catch {
           return val;
         }
       },
     },
-
     {
       title: "Thumbnail",
       dataIndex: "thumbnail",
       key: "thumbnail",
+      width: 100,
       render: (url) => (
         <Image
           src={url}
@@ -224,6 +273,7 @@ const Product = () => {
       title: "Images",
       dataIndex: "images",
       key: "images",
+      width: 160,
       render: (imgs) => {
         try {
           const arr = typeof imgs === "string" ? JSON.parse(imgs) : imgs;
@@ -257,12 +307,12 @@ const Product = () => {
     {
       title: "Action",
       key: "action",
+      width: 180,
       render: (_, record) => (
         <Space>
           <Button type="primary" onClick={() => handleEditClick(record)}>
             Edit
           </Button>
-
           <Popconfirm
             title="Are you sure delete this product?"
             onConfirm={() => handleDelete(record.id)}
@@ -322,14 +372,10 @@ const Product = () => {
 
     const filtered = products.filter((item) => {
       const createdDate = new Date(item.created_at).toISOString().split("T")[0];
-
-      const idMatch = item.id.includes(trimmedValue);
-
+      const idMatch = item.id.toString().includes(trimmedValue);
       const nameMatch = item.name.toLowerCase().includes(lowerValue);
       const typeMatch = item.type.toLowerCase().includes(lowerValue);
-
       const dateMatch = createdDate.includes(trimmedValue);
-
       return idMatch || nameMatch || typeMatch || dateMatch;
     });
 
@@ -366,7 +412,6 @@ const Product = () => {
             onSearch={handleSearch}
             style={{ maxWidth: 400 }}
           />
-
           <DatePicker
             value={filterDate}
             onChange={(date) => setFilterDate(date)}
@@ -383,28 +428,25 @@ const Product = () => {
             placeholder="Filter by Created Date"
           />
         </Space>
-
         <div style={{ marginBottom: 16, textAlign: "right" }}>
           <Button type="primary" onClick={handleAddProduct}>
             Add Product
           </Button>
         </div>
       </Space>
-
       <Table
         rowKey="id"
         dataSource={filteredProducts}
         columns={columns}
         bordered
         pagination={{ pageSize: 5 }}
-        scroll={{ x: "max-content" }}
+        scroll={{ x: 1200 }}
         style={{
           background: "#fff",
           borderRadius: 8,
           boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
         }}
       />
-
       <InsertModal
         show={showModal}
         title="Add Product"
@@ -416,7 +458,6 @@ const Product = () => {
         onSubmit={handleSubmit}
         onClose={() => setShowModal(false)}
       />
-
       <EditModal
         show={editModalVisible}
         title="Edit Product"
@@ -430,7 +471,7 @@ const Product = () => {
         }
         onClose={() => setEditModalVisible(false)}
         productId={editProductId}
-        onUpdated={handleUpdated} // 🔥 phải có
+        onUpdated={handleUpdated}
       />
     </div>
   );
