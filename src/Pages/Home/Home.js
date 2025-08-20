@@ -15,10 +15,10 @@ import dayjs from "dayjs";
 const Home = () => {
   const [orders, setOrders] = useState([]);
   const [pendingStatus, setPendingStatus] = useState({});
-  const [statusFilter, setStatusFilter] = useState("All"); // Default to Pending
+  const [statusFilter, setStatusFilter] = useState("All"); 
   const [idFilter, setIdFilter] = useState("");
   const [nameFilter, setNameFilter] = useState("");
-  const [dateFilter, setDateFilter] = useState(null); // New state for date filter
+  const [dateFilter, setDateFilter] = useState(null); 
 
   const fetchOrders = async () => {
     try {
@@ -65,7 +65,26 @@ const Home = () => {
       });
     } catch (error) {
       console.error("Error updating status:", error);
-      message.error("Lỗi khi cập nhật!");
+      message.error("Failed to update!");
+    }
+  };
+
+  const handleDeleteOrder = async (orderId) => {
+    try {
+      const res = await axios.post(
+        "http://localhost:8888/api/delete_order.php",
+        new URLSearchParams({ order_id: orderId })
+      );
+
+      if (res.data.status) {
+        message.success(`Deleted order ${orderId}`);
+        setOrders((prev) => prev.filter((order) => order.id !== orderId));
+      } else {
+        message.error(res.data.message || "Delete failed!");
+      }
+    } catch (error) {
+      console.error("Error deleting order:", error);
+      message.error("Delete failed!");
     }
   };
 
@@ -129,6 +148,7 @@ const Home = () => {
             { value: "Completed", label: "Completed" },
             { value: "Cancelled", label: "Cancelled" },
           ]}
+          disabled={record.status === "Completed" || record.status === "Cancelled"}
         />
       ),
     },
@@ -144,16 +164,22 @@ const Home = () => {
             type="primary"
             size="small"
             onClick={() => handleConfirmChangeStatus(record.id)}
+            disabled={record.status === "Completed" || record.status === "Cancelled"}
           >
             Confirm
           </Button>
           <Popconfirm
             title="Are you sure delete this order?"
-            onConfirm={() => handleDeleteOrder(record.id)} // ✅ gọi API xóa
+            onConfirm={() => handleDeleteOrder(record.id)}
             okText="Yes"
             cancelText="No"
+            disabled={record.status === "Completed" || record.status === "Cancelled"}
           >
-            <Button danger size="small">
+            <Button 
+              danger 
+              size="small"
+              disabled={record.status === "Completed" || record.status === "Cancelled"}
+            >
               Delete
             </Button>
           </Popconfirm>
@@ -162,25 +188,6 @@ const Home = () => {
     },
   ];
 
-  const handleDeleteOrder = async (orderId) => {
-    try {
-      const res = await axios.post(
-        "http://localhost:8888/api/delete_order.php",
-        new URLSearchParams({ order_id: orderId })
-      );
-
-      if (res.data.status) {
-        message.success(`Deleted order ${orderId}`);
-        // Cập nhật lại danh sách orders
-        setOrders((prev) => prev.filter((order) => order.id !== orderId));
-      } else {
-        message.error(res.data.message || "Delete failed!");
-      }
-    } catch (error) {
-      console.error("Error deleting order:", error);
-      message.error("Delete failed!");
-    }
-  };
   const filteredOrders = orders.filter((order) => {
     const matchesStatus =
       statusFilter === "All" || order.status === statusFilter;
@@ -195,7 +202,7 @@ const Home = () => {
     return matchesStatus && matchesId && matchesName && matchesDate;
   });
 
-  console.log("Filtered Orders:", filteredOrders); // Debug log
+  console.log("Filtered Orders:", filteredOrders);
 
   return (
     <div style={{ padding: 20 }}>
