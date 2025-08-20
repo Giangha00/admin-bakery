@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Image, Space, Input, DatePicker } from "antd";
+import {
+  Table,
+  Button,
+  Image,
+  Space,
+  Input,
+  DatePicker,
+  Popconfirm,
+} from "antd";
 import dayjs from "dayjs";
 import axios from "axios";
 import InsertModal from "../../Components/InsertModal/InsertModal";
@@ -72,6 +80,25 @@ const Product = () => {
     setFilteredProducts(tempProducts);
   }, [products, searchText, filterDate]);
 
+  const handleDelete = async (id) => {
+    try {
+      const rs = await axios.post(
+        "http://localhost:8888/api/delete_product.php",
+        { id }
+      );
+      if (rs.data.status) {
+        console.log("Delete success:", rs.data);
+        fetchProducts();
+      } else {
+        console.error("Delete failed:", rs.data.message);
+        alert("Delete failed: " + rs.data.message);
+      }
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      alert("Error deleting product: " + error.message);
+    }
+  };
+
   const handleAddProduct = () => {
     setShowModal(true);
     setFormValues({
@@ -96,13 +123,13 @@ const Product = () => {
     {
       name: "images",
       label: "Images (JSON Array)",
-      type: "text", // nhập vào chuỗi JSON
+      type: "text",
       required: true,
     },
     {
       name: "ingredients",
       label: "Ingredients (JSON Array)",
-      type: "text", // nhập vào chuỗi JSON
+      type: "text",
     },
     { name: "price", label: "Price", type: "number", required: true },
     {
@@ -231,9 +258,20 @@ const Product = () => {
       title: "Action",
       key: "action",
       render: (_, record) => (
-        <Button type="primary" onClick={() => handleEditClick(record)}>
-          Edit
-        </Button>
+        <Space>
+          <Button type="primary" onClick={() => handleEditClick(record)}>
+            Edit
+          </Button>
+
+          <Popconfirm
+            title="Are you sure delete this product?"
+            onConfirm={() => handleDelete(record.id)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button danger>Delete</Button>
+          </Popconfirm>
+        </Space>
       ),
     },
   ];

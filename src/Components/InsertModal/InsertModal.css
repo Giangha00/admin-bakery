@@ -1,18 +1,16 @@
-/* Overlay làm mờ nền */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5); /* nền tối mờ */
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 999;
 }
 
-/* Nội dung modal */
 .modal-content {
   background: #fff;
   padding: 25px 30px;
@@ -23,7 +21,6 @@
   animation: fadeInUp 0.3s ease;
 }
 
-/* Hiệu ứng xuất hiện */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -42,7 +39,6 @@
   text-align: center;
 }
 
-/* Form group */
 .form-group {
   margin-bottom: 15px;
   display: flex;
@@ -69,7 +65,6 @@
   box-shadow: 0px 0px 4px rgba(52, 152, 219, 0.5);
 }
 
-/* Hành động nút */
 .modal-actions {
   display: flex;
   justify-content: flex-end;

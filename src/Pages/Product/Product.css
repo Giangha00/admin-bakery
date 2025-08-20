@@ -96,17 +96,16 @@ tbody tr:hover {
 .thumbnail-cell,
 .images-cell {
   display: -webkit-box;
-  -webkit-line-clamp: 2; /* giới hạn 2 dòng */
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: normal;
-  max-width: 300px; /* chỉnh theo layout bảng của bạn */
+  max-width: 300px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-/* Khi mở rộng (do click) thì bỏ giới hạn */
 .description.expanded,
 .thumbnail-cell.expanded,
 .images-cell.expanded {

@@ -17,7 +17,6 @@ const EditModal = ({
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      // Gọi API update_product.php
       const payload = { ...values, id: productId };
       const res = await axios.post(
         "http://localhost:8888/api/update_product.php",

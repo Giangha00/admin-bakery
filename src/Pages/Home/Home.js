@@ -15,10 +15,10 @@ import dayjs from "dayjs";
 const Home = () => {
   const [orders, setOrders] = useState([]);
   const [pendingStatus, setPendingStatus] = useState({});
-  const [statusFilter, setStatusFilter] = useState("All"); // Default to Pending
+  const [statusFilter, setStatusFilter] = useState("All");
   const [idFilter, setIdFilter] = useState("");
   const [nameFilter, setNameFilter] = useState("");
-  const [dateFilter, setDateFilter] = useState(null); // New state for date filter
+  const [dateFilter, setDateFilter] = useState(null);
 
   const fetchOrders = async () => {
     try {
@@ -82,6 +82,15 @@ const Home = () => {
       dataIndex: "customer_name",
       key: "customer_name",
       width: 180,
+    },
+    {
+      title: "Telephone",
+      dataIndex: "customer_telephone",
+      key: "customer_telephone",
+      width: 150,
+      render: (telephone) => (
+        <span style={{ wordBreak: "break-all" }}>{telephone}</span>
+      ),
     },
     {
       title: "Date",
@@ -149,7 +158,7 @@ const Home = () => {
           </Button>
           <Popconfirm
             title="Are you sure delete this order?"
-            onConfirm={() => handleDeleteOrder(record.id)} // ✅ gọi API xóa
+            onConfirm={() => handleDeleteOrder(record.id)}
             okText="Yes"
             cancelText="No"
           >
@@ -195,7 +204,7 @@ const Home = () => {
     return matchesStatus && matchesId && matchesName && matchesDate;
   });
 
-  console.log("Filtered Orders:", filteredOrders); // Debug log
+  console.log("Filtered Orders:", filteredOrders);
 
   return (
     <div style={{ padding: 20 }}>
